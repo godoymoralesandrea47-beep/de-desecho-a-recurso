@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De desecho a recurso</title>
+    <style>
+        /* Estilos Generales */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+            background-color: #f0fdf4;
+            overflow: hidden; 
+        }
+
+        /* Menú de Navegación Estilo Frutiger Aero */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(240,245,255,0.85));
+            backdrop-filter: blur(10px);
+            padding: 0 30px;
+            height: 60px;
+            box-shadow: 0 2px 10px rgba(0, 120, 215, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.6);
+            box-sizing: border-box;
+        }
+
+        .navbar .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #0078d7;
+            text-decoration: none;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            cursor: pointer;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links li { margin-left: 20px; }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #005a9e;
+            font-weight: 600;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover { color: #00adff; }
+
+        /* Sistema de Pantallas */
+        .screen {
+            display: none; 
+            width: 100%;
+            height: 100vh; 
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex; 
+            flex-direction: column;
+        }
+
+        /* Portada */
+        .hero {
+            padding-top: 60px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: 
+                linear-gradient(to bottom, rgba(0, 40, 80, 0.4), rgba(22, 163, 74, 0.4)),
+                url('https://lh3.googleusercontent.com/d/1Uq8cmHogncp4O-M_w6cIybdHjtyyszUf') no-repeat center center;
+            background-size: cover;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin: 0;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255,255,255,0.3);
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        /* Burbujas */
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.65), rgba(0,180,255,0.15) 40%, rgba(255,255,255,0.2) 60%, rgba(255,255,255,0.85) 100%);
+            border-radius: 50%;
+            animation: floatUp infinite linear;
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 15px rgba(0, 120, 215, 0.1);
+        }
+
+        .b1 { width: 120px; height: 120px; left: 8%; animation-duration: 9s; }
+        .b2 { width: 80px; height: 80px; left: 28%; animation-duration: 13s; }
+        .b3 { width: 140px; height: 140px; left: 65%; animation-duration: 16s; }
+        .b4 { width: 100px; height: 100px; left: 82%; animation-duration: 11s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.9); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-120vh) scale(1.1); opacity: 0; }
+        }
+
+        .scrollable-screen {
+            overflow-y: auto; 
+            padding-top: 60px; 
+        }
+
+        /* FONDO PERSONALIZADO PARA ¿QUIÉNES SOMOS? */
+        #screen-quienes-somos {
+            background: 
+                linear-gradient(to bottom, rgba(240, 253, 244, 0.85), rgba(224, 242, 254, 0.85)),
+                url('https://docs.google.com/uc?export=download&id=1GXpvhAy9GRWyCokCkgkN3ukkFzEx-1Nb') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .content-container {
+            padding: 40px 20px 60px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-header h2 { font-size: 38px; color: #0078d7; margin-bottom: 10px; text-shadow: 1px 1px 4px rgba(255,255,255,0.8); }
+        .section-subtitle { font-size: 22px; color: #16a34a; font-style: italic; font-weight: 600; text-shadow: 1px 1px 4px rgba(255,255,255,0.8); }
+
+        /* Bloques de Información */
+        .info-block {
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: blur(5px);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .block-green { border-left: 6px solid #16a34a; }
+        .block-blue { border-left: 6px solid #00bcff; }
+
+        .info-block h2 { font-size: 28px; margin: 0 0 15px 0; }
+        .block-green h2 { color: #16a34a; }
+        .block-blue h2 { color: #0078d7; }
+        .info-block p { font-size: 16px; line-height: 1.8; color: #444; }
+
+        /* Financiamiento Listas Estilizadas */
+        .finance-list { list-style: none; padding: 0; margin: 15px 0; }
+        .finance-list li { position: relative; padding-left: 25px; margin-bottom: 12px; font-size: 15.5px; line-height: 1.6; }
+        .list-pros li::before { content: '➔'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
+        .list-cons li::before { content: '➔'; position: absolute; left: 0; color: #c7212f; font-weight: bold; }
+
+        /* Referencias APA */
+        .apa-reference { padding-left: 30px; text-indent: -30px; margin-bottom: 15px; font-size: 15px; line-height: 1.6; color: #444; }
+
+        /* Cronograma y Tareas */
+        .timeline { border-left: 3px solid #00bcff; padding: 10px 0 10px 30px; margin-left: 20px; }
+        .timeline-item { position: relative; margin-bottom: 25px; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -39px; top: 4px; width: 14px; height: 14px;
+            background: #00bcff; border: 3px solid #f0fdf4; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,188,255,0.6);
+        }
+        .timeline-title { font-weight: bold; color: #0078d7; font-size: 17px; }
+
+        .task-list { list-style: none; padding: 0; }
+        .task-item { 
+            display: flex; align-items: center; background: #f0fdf4; 
+            padding: 14px 18px; border-radius: 12px; margin-bottom: 12px; 
+            border: 1px solid rgba(22, 163, 74, 0.2); font-size: 15.5px; color: #27272a; font-weight: 500;
+        }
+        .task-icon-done { color: #16a34a; font-size: 18px; margin-right: 15px; font-weight: bold; }
+
+        /* Integrantes */
+        .integrantes-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .card-integrante {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 25px 20px; border-radius: 16px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,120,215,0.08); border-top: 5px solid #00bcff;
+        }
+        
+        /* Contenedores Grandes de PDF/Formularios/Documentos */
+        .pdf-carousel-box, .form-container-box { 
+            width: 100%; height: 560px; border-radius: 16px; overflow: hidden; 
+            box-shadow: 0 12px 35px rgba(0, 120, 215, 0.15); border: 1px solid rgba(0, 120, 215, 0.2); 
+            background: #fff; margin: 25px 0 40px 0; position: relative;
+        }
+        iframe { width: 100%; height: 100%; border: none; transform-origin: top center; transition: transform 0.3s ease; }
+
+        /* ODS */
+        .ods-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .ods-card { background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+        .ods-4 { border-top: 6px solid #c7212f; } .ods-4 h3 { color: #c7212f; margin-top: 0; }
+        .ods-9 { border-top: 6px solid #f26a2e; } .ods-9 h3 { color: #f26a2e; margin-top: 0; }
+        .ods-12 { border-top: 6px solid #bf8d2c; } .ods-12 h3 { color: #bf8d2c; margin-top: 0; }
+
+        /* Cuadrícula de Galería */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        /* Contenedor de Imagen con Zoom */
+        .image-box {
+            width: 100%;
+            height: 220px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0, 120, 215, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            background: #ffffff;
+            position: relative;
+            animation: AeroFloat 5s ease-in-out infinite alternate;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .image-grid .image-box { overflow: hidden; }
+        .image-grid .image-box iframe { transform-origin: center center; }
+
+        .image-grid .image-box:nth-child(2n) { animation-delay: 1s; animation-duration: 5.5s; }
+        .image-grid .image-box:nth-child(3n) { animation-delay: 2s; animation-duration: 4.8s; }
+
+        .image-box:hover {
+            box-shadow: 0 15px 30px rgba(0, 173, 255, 0.35);
+            border-color: rgba(0, 173, 255, 0.8);
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(220,235,255,0.9));
+            border: 1px solid rgba(0, 120, 215, 0.4);
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
+            color: #005a9e;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .zoom-btn:hover {
+            background: #0078d7;
+            color: #fff;
+            transform: scale(1.15);
+        }
+
+        @keyframes AeroFloat {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-7px); }
+        }
+
+        @media (max-width: 768px) { .image-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .image-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a onclick="showScreen('inicio')" class="logo">De desecho a recurso</a>
+        <ul class="nav-links">
+            <li><a onclick="showScreen('inicio')">Inicio</a></li>
+            <li><a onclick="showScreen('quienes-somos')">¿Quiénes Somos?</a></li>
+            <li><a onclick="showScreen('presentacion')">Presentación del Proyecto</a></li>
+            <li><a onclick="showScreen('fundamentacion')">Fundamentación</a></li>
+            <li><a onclick="showScreen('planeacion')">Planeación</a></li>
+            <li><a onclick="showScreen('bitacora')">Bitácora</a></li>
+            <li><a onclick="showScreen('galeria')">Galería</a></li>
+            <li><a onclick="showScreen('conclusiones')">Conclusiones</a></li>
+        </ul>
+    </nav>
+
+    <header id="screen-inicio" class="screen hero active">
+        <div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div><div class="bubble b4"></div>
+        <h1>De desecho a recurso</h1>
+    </header>
+
+    <main id="screen-quienes-somos" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>¿Quiénes Somos?</h2><div class="section-subtitle">Equipo: Frutiger Aero</div></div>
+            <div class="integrantes-container">
+                <div class="card-integrante"><h3>Garita Mendoza Ofelio Efraín</h3><p>Integrante</p></div>
+                <div class="card-integrante"><h3>Godoy Morales Andrea</h3><p>Integrante</p></div>
+                <div class="card-integrante"><h3>Trejo Olvera Joana Valeria</h3><p>Integrante</p></div>
+            </div>
+            <div class="info-block block-green">
+                <h2>Descripción del Proyecto</h2>
+                <p>Transformar los residuos generados en la comunidad estudiantil en recursos útiles, promoviendo economía circular, educación ambiental y participación activa. En lugar de solo “separar basura”, el proyecto le da destino concreto a cada residuo, mostrando a los estudiantes qué pasa después.</p>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-presentacion" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Presentación</h2><div class="section-subtitle">Iniciativa Institucional</div></div>
+            <div class="info-block block-blue">
+                <h2>Presentación del Proyecto</h2>
+                <p>Es una iniciativa dirigida a la comunidad estudiantil que busca mejorar la gestión de residuos dentro de la institución, promoviendo la separación, el reciclaje y el aprovechamiento responsable de los desechos.</p>
+            </div>
+            <div class="info-block block-green">
+                <h2>ODS relacionados</h2>
+                <div class="ods-grid">
+                    <div class="ods-card ods-4"><h3>ODS 4: Educación de Calidad</h3><p>Garantiza una educación inclusiva, equitativa y de calidad, promoviendo oportunidades de aprendizaje ambiental práctico que concienticen a los estudiantes sobre el impacto directo de sus acciones cotidianas y la gestión sustentable de su entorno.</p></div>
+                    <div class="ods-card ods-9"><h3>ODS 9: Industria, Innovación e Infraestructura</h3><p>Fomenta el desarrollo de infraestructuras escolares más resilientes y sostenibles mediante el diseño e implementación de sistemas eficientes de recolección y monitoreo de residuos asistidos por tecnología adaptada al espacio escolar.</p></div>
+                    <div class="ods-card ods-12"><h3>ODS 12: Producción y Consumo Responsables</h3><p>Promueve de forma activa la reducción, reciclaje y reutilización de materiales de desecho generados en la escuela, cambiando hábitos de consumo estudiantil y asegurando una gestión ecológica que minimice los desperdicios globales.</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-fundamentacion" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Fundamentación</h2><div class="section-subtitle">Fase de Diagnóstico y Planificación</div></div>
+            <div class="info-block block-blue">
+                <h2>creación del proyecto</h2>
+                <p>Para este proyecto, cada integrante seleccionó 3 ideas de su agrado para tener un impacto en la comunidad escolar alineándose con el ámbito de este proyecto: "residuos con rumbo".</p>
+            </div>
+            <div class="info-block block-green">
+                <h2>lluvia de ideas</h2>
+                <p>En una presentación se ingresaron cada una de estas ideas, explaining su objetivo e impacto en la comunidad.</p>
+                <div class="pdf-carousel-box"><iframe src="https://drive.google.com/file/d/1SwKc1y7d2HqbzEcRNa3rPBud4knArPo2/preview"></iframe></div>
+            </div>
+            
+            <div class="info-block block-green">
+                <h2>Justificación y proceso de selección</h2>
+                <p>Para la selección de la idea, se realizó una encuesta interna entre los integrantes donde solo se seleccionó una por persona, y por consiguiente, se realizó un formulario al público donde se explica en qué consiste cada una de las ideas.</p>
+                <div class="form-container-box">
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScP9IaSFkRsDCmbFTn8lhu0HuTyf4UW7xgYUX91bEUh_mrlaA/viewform?embedded=true">Cargando formulario...</iframe>
+                </div>
+            </div>
+
+            <div class="info-block block-blue">
+                <h2>Análisis y Conclusión</h2>
+                <p>Después de la recopilación de respuestas del formulario se hizo un análisis de los datos y una conclusión sobre quién sería la idea ganadora.</p>
+                <div class="pdf-carousel-box"><iframe src="https://drive.google.com/file/d/1Sudgs1zOCcABqevPghbG-e0vFIL_vE7A/preview"></iframe></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-planeacion" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Planeación</h2><div class="section-subtitle">Organización Estratégica y Económica</div></div>
+            
+            <div class="info-block block-blue">
+                <h2>Cronograma</h2>
+                <div class="timeline">
+                    <div class="timeline-item"><div class="timeline-title">problema social</div></div>
+                    <div class="timeline-item"><div class="timeline-title">ODS</div></div>
+                    <div class="timeline-item"><div class="timeline-title">sistema propuesto</div></div>
+                    <div class="timeline-item"><div class="timeline-title">base de datos</div></div>
+                    <div class="timeline-item"><div class="timeline-title">maqueta</div></div>
+                    <div class="timeline-item"><div class="timeline-title">formulario</div></div>
+                    <div class="timeline-item"><div class="timeline-title">sitio web final</div></div>
+                </div>
+            </div>
+
+            <div class="info-block block-green">
+                <h2>Financiamiento del Proyecto</h2>
+                <p>Consiste en la gestión de recursos económicos y materiales para cubrir las fases de diseño y armado de la maqueta física (plásticos, pinturas, cartón), así como la impresión de documentos de bitácora y la configuración de las interfaces digitales. El modelo financiero se basa en la <strong>autofinanciación equitativa</strong> entre los miembros del equipo y la reutilización activa de materiales del entorno.</p>
+                
+                <h3 style="color: #16a34a; margin-top: 20px; font-size: 19px;">Ventajas del Modelo:</h3>
+                <ul class="finance-list list-pros">
+                    <li><strong>Autonomía y agilidad en la ejecución:</strong> Al depender exclusivamente de las aportaciones económicas internas de los integrantes, el equipo puede adquirir los materiales y herramientas de inmediato sin retrasarse por trámites burocráticos o aprobaciones institucionales externas.</li>
+                    <li><strong>Presupuesto altamente sustentable:</strong> Al estar alineado con los principios de economía circular, el costo financiero se reduce significativamente, ya que se prioriza la recolección y reciclaje de componentes plásticos y de cartón que los propios integrantes ya poseían en sus hogares.</li>
+                    <li><strong>Control directo del gasto:</strong> Permite una administración transparente y rigurosa de cada peso invertido, destinando fondos exclusivamente a los requerimientos esenciales del proyecto como el prototipado físico, el despliegue del formulario y la optimización de los sistemas.</li>
+                </ul>
+
+                <h3 style="color: #c7212f; margin-top: 20px; font-size: 19px;">Desventajas del Modelo:</h3>
+                <ul class="finance-list list-cons">
+                    <li><strong>Capacidad económica e infraestructura limitada:</strong> Al ser un financiamiento puramente estudiantil, el presupuesto disponible es pequeño. Esto restringe la posibilidad de incorporar tecnologías digitales avanzadas o hardware especializado para el monitoreo de los contenedores de residuos.</li>
+                    <li><strong>Riesgo absorbido por los integrantes:</strong> Ante cualquier error en el diseño de la maqueta, pérdida de materiales o imprevistos técnicos durante el desarrollo, los costos adicionales deben ser cubiertos directamente por los bolsillos de los alumnos, impactando su economía personal.</li>
+                    <li><strong>Dependencia absoluta del compromiso grupal:</strong> Si algún miembro del equipo sufre un contratiempo financiero o no entrega su aportación equitativa en los tiempos establecidos, se genera un desbalance presupuestal que compromete directamente el cumplimiento de las fechas del cronograma general.</li>
+                </ul>
+            </div>
+
+            <div class="info-block block-green">
+                <h2>Lista de tareas</h2>
+                <ul class="task-list">
+                    <li class="task-item"><span class="task-icon-done">✓</span> Equipos</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Formularios 01</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Revisión de formulario parte 01</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Asistencia de IA de formulario 01</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Formularios 02</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Revisión de formulario parte 02. Salto entre secciones.</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Revisión de formulario de PAEC</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> -PARCIAL 2 - Presentación y Difusión de los Proyectos en RRSS y WhatsApp - PARTE 1--</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Presentación y análisis del avance del formulario- PARTE 2</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Reporte final del análisis del formulario- PARTE 3</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Material para maqueta</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Estructura de sitio WEB</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Actividad: Análisis del problema y diseño inicial de una base de datos</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Maqueta Física de la App</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Vídeo de la maqueta realizada.</li>
+                    <li class="task-item"><span class="task-icon-done">✓</span> Actividad final: documento integrador y sitio web del proyecto</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-bitacora" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Bitácora</h2><div class="section-subtitle">Registro de Actividades y Seguimiento</div></div>
+            <div class="info-block block-blue">
+                <h2>Documento de Bitácora Oficial</h2>
+                <p>A continuación se presenta el documento adjunto con los reportes de avances, notas de campo y el desarrollo detallado del proyecto escolar.</p>
+                <div class="pdf-carousel-box"><iframe src="https://drive.google.com/file/d/1_nzYtn0drYWSvjAeyv4PbyNegZFasRdb/preview"></iframe></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-galeria" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Galería</h2><div class="section-subtitle">Evidencias Visuales</div></div>
+            
+            <div class="info-block block-blue">
+                <h2>proceso de creacion de la maqueta</h2>
+                <p>La maqueta representa el funcionamiento de un sistema de base de datos diseñado para gestionar los residuos generados dentro de la comunidad escolar, con el objetivo de transformarlos en recursos útiles mediante un modelo de economía circular. A través de diferentes pantallas o secciones, se simula de manera visual cómo operaría un sistema digital real, permitiendo comprender tanto el registro de información como la relación entre los datos. La función principal del sistema es registrar la entrada de residuos. En la sección de residuos se capturan datos importantes como la fecha, la categoría del material, la cantidad y el donante que lo entrega. Esta información permite llevar un control claro de los materiales que ingresan al proceso. Por otro lado, la sección de donantes tiene la función de identificar a las personas, grupos o áreas que participan en la entrega de residuos, facilitando el seguimiento de la participación dentro del proyecto.</p>
+                
+                <p style="font-size: 14px; color: #0078d7; font-weight: 500;">* Usa los controles <strong>+</strong> y <strong>-</strong> en la esquina inferior de cada recuadro para ajustar el zoom directamente.</p>
+
+                <div class="image-grid">
+                    <div class="image-box">
+                        <iframe id="img-m1" src="https://drive.google.com/file/d/1NS3dq0wzxO5axAcFaLXGPR-wrmjnaP1C/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m1', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m1', -0.1)">-</button>
+                        </div>
+                    </div>
+                    <div class="image-box">
+                        <iframe id="img-m2" src="https://drive.google.com/file/d/11B-dRPefnAga7CvBU3Cn2iym7i_5iude/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m2', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m2', -0.1)">-</button>
+                        </div>
+                    </div>
+                    <div class="image-box">
+                        <iframe id="img-m3" src="https://drive.google.com/file/d/1PBju_gtRreqi18Al6LnVzmwfI2rvgdLe/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m3', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m3', -0.1)">-</button>
+                        </div>
+                    </div>
+                    <div class="image-box">
+                        <iframe id="img-m4" src="https://drive.google.com/file/d/1--m_NXf3pHTefJxJI6bNGWwcd0xUoTMo/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m4', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m4', -0.1)">-</button>
+                        </div>
+                    </div>
+                    <div class="image-box">
+                        <iframe id="img-m5" src="https://drive.google.com/file/d/1T30It4vUxNHiz6_Q28grABnhw9o4BjIC/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m5', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m5', -0.1)">-</button>
+                        </div>
+                    </div>
+                    <div class="image-box">
+                        <iframe id="img-m6" src="https://drive.google.com/file/d/1WIvNLQjRzjmRA5OSqL5zNkJihKUoshrK/preview"></iframe>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomImage('img-m6', 0.1)">+</button>
+                            <button class="zoom-btn" onclick="zoomImage('img-m6', -0.1)">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block block-blue">
+                <h2>Evidencias de Proyectos Adicionales</h2>
+                <p>A continuación se presentan evidencias visuales e informativas correspondientes a tres proyectos distintos implementados en la comunidad estudiantil, los cuales complementan las estrategias de sustentabilidad y concientización ecológica.</p>
+                <div class="image-grid">
+                    <div class="image-box"><iframe src="https://docs.google.com/document/d/1VQ99Ai18-__DKeWuOGHQWwSAygLvhO2M/preview"></iframe></div>
+                    <div class="image-box"><iframe src="https://drive.google.com/file/d/1r_m85rtFUOsTiruu-K7OQtU5fS8GLlX4/preview"></iframe></div>
+                    
+                    <div class="image-box" onclick="window.open('https://sites.google.com/cbtis118.edu.mx/proyectopaec118/inicio', '_blank')" style="cursor: pointer; background: linear-gradient(135deg, #e0f2fe, #f0fdf4); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box;">
+                        <div style="font-size: 50px; margin-bottom: 10px;">🌐</div>
+                        <h3 style="margin: 0 0 8px 0; color: #0078d7; font-size: 18px;">Simulación del Sitio Web</h3>
+                        <p style="margin: 0; font-size: 13px; color: #555;">Google Sites: Proyecto PAEC 118</p>
+                        <span style="margin-top: 15px; font-size: 12px; background: #0078d7; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">Haz clic para visitar sitio ↗</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block block-green">
+                <h2>Base de datos realizada</h2>
+                <p>Esta base de datos es el objetivo final de nuestro proyecto, que los alumnos tengan un acceso a ella donde puedan registrar sus residuos generados y ver el control que se lleva en estos, fue realizada lo más parecido posible a nuestra maqueta.</p>
+                
+                <div class="pdf-carousel-box" style="position: relative;">
+                    <iframe id="img-word" src="https://docs.google.com/document/d/15xTQVjoQ-eyUc0CqrBC2LgDA69je357y/preview"></iframe>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="zoomImage('img-word', 0.1)">+</button>
+                        <button class="zoom-btn" onclick="zoomImage('img-word', -0.1)">-</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block block-green">
+                <h2>video de maqueta realizada</h2>
+                <p>A continuación se presenta el video explicativo de la maqueta física desarrollada para el proyecto.</p>
+                <div class="pdf-carousel-box"><iframe src="https://drive.google.com/file/d/1oZxfhctPi6Qkx4zXL06OyJUvb3bPHh1E/preview"></iframe></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="screen-conclusiones" class="screen scrollable-screen">
+        <div class="content-container">
+            <div class="section-header"><h2>Conclusiones</h2><div class="section-subtitle">Cierre del Proyecto y Aprendizajes Grupales</div></div>
+            
+            <div class="info-block block-green">
+                <h2>Resultados Finales</h2>
+                <p>El proyecto "De desecho a recurso" consolida de forma exitosa los objetivos del equipo Frutiger Aero, demostrando que mediante un system lógico de base de datos y herramientas de recopilación como los formularios digitales, es posible estructurar de forma clara y funcional la transformación de residuos escolares en recursos reutilizables, cumpliendo con las directrices de los ODS 4, 9 y 12.</p>
+            </div>
+
+            <div class="info-block block-blue">
+                <h2>Impacto Social Esperado</h2>
+                <p>A través de la implementación de este sistema de monitoreo y registro, se espera generar un cambio de cultura radical dentro de la comunidad del plantel, transformando la percepción pasiva de la basura hacia una participación activa de responsabilidad compartida. Al automatizar y transparentar el destino de las donaciones de materiales reciclables, los estudiantes desarrollan un sentido de pertenencia y orgullo ecológico, motivando a otras aulas, turnos e instituciones a adoptar modelos tecnológicos similares. El impacto a largo plazo radica en formar ciudadanos conscientes capaces de trasladar la cultura de la economía circular desde las aulas hacia sus propios hogares y entornos comunitarios.</p>
+            </div>
+
+            <div class="info-block block-green">
+                <h2>Conclusión Personal de los Integrantes</h2>
+                
+                <div style="margin-bottom: 25px; border-bottom: 1px dashed rgba(22, 163, 74, 0.3); padding-bottom: 15px;">
+                    <h3 style="color: #16a34a; font-size: 18px; margin: 0 0 8px 0;">Godoy Morales Andrea</h3>
+                    <p style="font-size: 15.5px; line-height: 1.7; color: #444; margin: 0;">Para mí este proyecto significó aprender del trabajo colaborativo y a tener una mejor organización, desarrollar la habilidad que tenemos nosotros como estudiantes al usar recursos tecnológicos como una ayuda y fuente de información para la creación de un proyecto bien estructurado. Nuestro equipo llamado "Frutiger Aero" buscaba tomar y mostrar la esencia de un mundo futurista, donde la tecnología y la naturaleza no compiten una con otra, sino buscan juntas un futuro limpio y sostenible.</p>
+                </div>
+
+                <div style="margin-bottom: 25px; border-bottom: 1px dashed rgba(22, 163, 74, 0.3); padding-bottom: 15px;">
+                    <h3 style="color: #16a34a; font-size: 18px; margin: 0 0 8px 0;">Garita Mendoza Ofelio Efraín</h3>
+                    <p style="font-size: 15.5px; line-height: 1.7; color: #444; margin: 0;">En lo personal, el desarrollo de esta iniciativa me permitió comprender el valor práctico del diseño estructural de las bases de datos aplicadas a un problema real como el manejo de residuos escolares. Aprendí que la informática y la programación no son abstractas, sino herramientas clave para optimizar recursos y resolver necesidades logísticas. El trabajo bajo la temática de nuestro equipo me inspiró a diseñar soluciones limpias, ordenadas y eficientes que demuestran que el desarrollo tecnológico puede y debe convivir en armonía con el cuidado ambiental.</p>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <h3 style="color: #16a34a; font-size: 18px; margin: 0 0 8px 0;">Trejo Olvera Joana Valeria</h3>
+                    <p style="font-size: 15.5px; line-height: 1.7; color: #444; margin: 0;">Este proyecto representó una experiencia fundamental para valorar la importancia de la planeación y el seguimiento detallado de un cronograma a través de la bitácora. Lograr que un formulario conecte con la simulación de una app y el diseño de la maqueta física requirió un gran esfuerzo de análisis y comunicación constante en nuestro equipo. Me enorgullece que como parte de Frutiger Aero logramos transmitir una visión fresca y moderna, demostrando que los estudiantes de bachillerato podemos liderar propuestas que integren innovación digital con la preservación ecológica de nuestro entorno escolar.</p>
+                </div>
+            </div>
+
+            <div class="info-block block-blue">
+                <h2>Referencias Bibliográficas (Formato APA)</h2>
+                <div class="apa-reference">Comisión Económica para América Latina y el Caribe. (2022). <i>Objetivo de Desarrollo Sostenible 12: Garantizar modalidades de consumo y producción sostenibles</i>. Naciones Unidas.</div>
+                <div class="apa-reference">Hernández, R., & Torres, J. M. (2021). Gestión de bases de datos relacionales aplicadas al control de inventarios y logística escolar. <i>Revista Iberoamericana de Tecnología en Educación</i>, 14(2), 45-58.</div>
+                <div class="apa-reference">Organización de las Naciones Unidas para la Educación, la Ciencia y la Comunidad. (2024). <i>La educación ambiental como motor de la economía circular en entornos de educación media superior</i>. UNESCO.</div>
+                <div class="apa-reference">Programa de las Naciones Unidas para el Medio Ambiente. (2023). <i>Directrices globales para el reciclaje de residuos sólidos y concientización en comunidades estudiantiles</i>. PNUMA.</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showScreen(screenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.style.display = 'none');
+            const target = document.getElementById('screen-' + screenId);
+            if (target) {
+                target.style.display = (screenId === 'inicio') ? 'flex' : 'block';
+                target.scrollTop = 0;
+            }
+        }
+
+        const zoomStates = {};
+
+        function zoomImage(elementId, amount) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            if (zoomStates[elementId] === undefined) {
+                zoomStates[elementId] = 1.0;
+            }
+
+            zoomStates[elementId] += amount;
+
+            // Límites para evitar que se distorsione demasiado
+            if (zoomStates[elementId] < 0.5) zoomStates[elementId] = 0.5;
+            if (zoomStates[elementId] > 2.5) zoomStates[elementId] = 2.5;
+
+            el.style.transform = `scale(${zoomStates[elementId]})`;
+        }
+    </script>
+</body>
+</html>
